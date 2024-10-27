@@ -1,9 +1,7 @@
-name: Reviewdog CI
+name: Reviewdog CI for PHP_CodeSniffer
 
 on:
   pull_request:
-    paths:
-      - '**/*.js'  # Đặt điều kiện file để chỉ chạy linter trên các file JavaScript, thay đổi theo nhu cầu của bạn.
     branches:
       - main
   push:
@@ -11,24 +9,25 @@ on:
       - main
 
 jobs:
-  lint:
+  phpcs:
     runs-on: ubuntu-latest
 
     steps:
       - name: Check out code
         uses: actions/checkout@v3
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
         with:
-          node-version: '14'  # Đặt phiên bản Node.js phù hợp với dự án của bạn.
+          php-version: '8.1'  # Đặt phiên bản PHP phù hợp với dự án
 
       - name: Install dependencies
-        run: npm install
+        run: composer install
 
-      - name: Run ESLint with Reviewdog
-        uses: reviewdog/action-eslint@v1
+      - name: PHP_CodeSniffer with Reviewdog
+        uses: reviewdog/action-phpcs@v1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          reporter: github-pr-review # Đưa ra review trong pull request
-          eslint_flags: '.'          # Kiểm tra tất cả các file trong dự án, có thể điều chỉnh tùy ý.
+          reporter: github-pr-review
+          phpcs_flags: "--standard=PSR12"  # Tiêu chuẩn kiểm tra code PSR12
+          level: "error"  # Chỉ review các lỗi nghiêm trọng
