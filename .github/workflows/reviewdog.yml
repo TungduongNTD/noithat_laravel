@@ -31,7 +31,7 @@ jobs:
           ~/.composer/vendor/bin/phpcs --standard=PSR12 app/ --report=full | reviewdog -f=phpcs -reporter=github-pr-review -level=error
 
       - name: Reviewdog
-        uses: reviewdog/action-phpcs@v1
+        uses: reviewdog/reviewdog@v1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           reporter: github-pr-review
