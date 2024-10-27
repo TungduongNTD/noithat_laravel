@@ -1,4 +1,4 @@
-name: Reviewdog CI for PHP_CodeSniffer
+name: PHP CodeSniffer with Reviewdog
 
 on:
   pull_request:
@@ -11,23 +11,28 @@ on:
 jobs:
   phpcs:
     runs-on: ubuntu-latest
-
     steps:
       - name: Check out code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v2
 
-      - name: Set up PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.1'  # Đặt phiên bản PHP phù hợp với dự án
+      - name: Install PHP and dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install php-cli php-xml
+          curl -sS https://getcomposer.org/installer | php
+          php composer.phar install
 
-      - name: Install dependencies
-        run: composer install
+      - name: Install PHP_CodeSniffer
+        run: |
+          php composer.phar global require squizlabs/php_codesniffer
 
-      - name: PHP_CodeSniffer with Reviewdog
+      - name: Run PHP_CodeSniffer
+        run: |
+          ~/.composer/vendor/bin/phpcs --standard=PSR12 src/ --report=full | reviewdog -f=phpcs -reporter=github-pr-review -level=error
+
+      - name: Reviewdog
         uses: reviewdog/action-phpcs@v1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           reporter: github-pr-review
-          phpcs_flags: "--standard=PSR12"  # Tiêu chuẩn kiểm tra code PSR12
-          level: "error"  # Chỉ review các lỗi nghiêm trọng
+          filter_mode: added
